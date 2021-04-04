@@ -36,16 +36,16 @@ class GCodeSystemCommands(octoprint.plugin.StartupPlugin,
             cmd_id = definition['id']
             cmd_line = definition['command']
             self.command_definitions[cmd_id] = cmd_line
-            self._logger.info("Add command definition OCTO%s = %s" % (cmd_id, cmd_line))
+            self._logger.info("Add command definition M%s = %s" % (cmd_id, cmd_line))
 
     def hook_gcode_sending(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         if gcode:
             return
 
-        if cmd[:4] != 'OCTO':
+        if cmd[:1] != 'M':
             return
 
-        match = re.search(r'^(OCTO[0-9]+)(?:\s(.*))?$', cmd)
+        match = re.search(r'^(M[0-9]+)(?:\s(.*))?$', cmd)
         if match is None:
             return
 
@@ -54,15 +54,16 @@ class GCodeSystemCommands(octoprint.plugin.StartupPlugin,
 
         try:
             cmd_line = self.command_definitions[cmd_id]
-        except:
-            self._logger.error("No definition found for ID %s" % cmd_id)
-            comm_instance._log("Return(GCodeSystemCommands): undefined")
-            return (None,)
+        except KeyError:
+            return
+            # self._logger.error("No definition found for ID %s" % cmd_id)
+            # comm_instance._log("Return(GCodeSystemCommands): undefined")
+            # return (None,)
 
         self._logger.debug("Command ID=%s, Line=%s, Args=%s" % (cmd_id, cmd_line, cmd_args))
 
         self._logger.info("Executing command ID: %s" % cmd_id)
-        comm_instance._log("Exec(GCodeSystemCommands): OCTO%s" % cmd_id)
+        comm_instance._log("Exec(GCodeSystemCommands): M%s" % cmd_id)
 
         cmd_env = {}
         cmd_env['OCTOPRINT_GCODESYSTEMCOMMAND_ID'] = str(cmd_id)
@@ -73,9 +74,8 @@ class GCodeSystemCommands(octoprint.plugin.StartupPlugin,
             p = subprocess.Popen(cmd_line, env=cmd_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             output = p.communicate()[0]
             r = p.returncode
-        except:
-            e = sys.exc_info()[0]
-            self._logger.exception("Error executing command ID %s: %s" % (cmd_id, e))
+        except Exception as ex:
+            self._logger.exception("Error executing command ID %s: %s" % (cmd_id, ex))
             return (None,)
 
         # Make sure we don't throw when logging output if it contains non-ascii characters

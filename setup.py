@@ -8,9 +8,9 @@ plugin_package = "octoprint_%s" % plugin_identifier
 plugin_name = "OctoPrint-GCodeSystemCommands"
 plugin_version = "1.0.1"
 plugin_description = "Define G-Code commands that execute local system commands."
-plugin_author = "Shawn Bruce"
+plugin_author = "Shawn Bruce, Kami, Poikilos"
 plugin_author_email = "kantlivelong@gmail.com"
-plugin_url = "https://github.com/kantlivelong/OctoPrint-GCodeSystemCommands"
+plugin_url = "https://github.com/poikilos/OctoPrint-GCodeSystemCommands"
 plugin_license = "AGPLv3"
 plugin_additional_data = []
 
